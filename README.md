@@ -10,7 +10,8 @@ But it is not easy to track the evolution of all characters and have a better vi
 So the main goal for this app is to enable a better view of the big picture and compare the current status with the meta.
 And if possible, also provide some tools to help the player manage its resources.
 
-Another objective is that this app has as goal to be cheap to maintain, so for initial version it should work offline, but with possibility to upgrade into a online version, meaning that instead of inputing the META manually, the meta would be based on what everyone's comp.
+Another objective is that this app has as goal to be cheap to maintain, so for initial version it should work offline, but with possibility to upgrade into a online version.
+So initially the META will be inputed manually, but may be changed with online data.
 
 
 ## Planning
@@ -34,6 +35,7 @@ For example, an accessory there is a need to know which ring and set it is being
 but there is no need to say that it needs to maxmized into Tier 3 +9, because it will alway be the goal.
 
 Also, the system will track all the challenges/events to help build the comps, and compare if the user's comp is in the meta.
+This may help begginner that doesn't have the META Character by the time, but has others substitutes.
 
 
 ![](/asset/character_attribute.png)
@@ -240,3 +242,136 @@ Each set has buffs if used with 2/4 equipments together.
     A group like world boss would look like: {name: WB, canRepeat: false, challenges:  [{ name: wb1, comp: [...] }] }
 
 ## Planning - Tech
+
+This section plans the technical part like modeling and technologies to be used.
+
+### Models
+
+#### Character
+```typescript
+type Character = {
+    id: number
+    name: string
+    attribute: "Life" | "Balance" | "Retribution" | "Cycle" | "Ruin"
+    class: "Assault" | "Tank" | "Ranger" | "Mage" | "Healer"
+}
+```
+
+#### UserCharacter
+```typescript
+type UserCharacter = {
+    userId: number
+    characterId: number
+    level: Level,
+    chaser: Chaser,
+    soulImprint: SoulImprint,
+    transcendence: Transcendence
+    equipments: Equipments
+    herosExclusiveWeapon: HerosExclusiveWeapon
+    artifact: Artifact
+    ring: Accessory<'ring'>
+    necklace: Accessory<'necklace'>
+    earring: Accessory<'earring'>
+}
+``` 
+```typescript
+type Level = {
+    value: number,
+    traits: {
+        critChance: number
+        skillCooldownReduction: number
+        basicAttackSpeedIncrease: number
+        basicAttackDamageReduction: number
+        skillAttackDamageReduction: number
+        basicAttackDamageIncrease: number
+        skillAttackDamageIncrease: number
+        trueDamageIncrease: number
+        increaseReceivedHealingAmount: number
+    }
+}
+```
+```typescript
+type Chaser = {
+    value: number,
+    trait: {
+        // rank 5
+        elevatedPower: number
+        longLife: number
+        helper: number
+        prayerofBlessing: number
+        // rank 10   
+        invisibleHand: number
+        divineProtection: number
+        pureLuck: number
+        breathofLife: number
+        // rank 15
+        connection: number
+        impulse: number
+        persistentExecutioner: number
+        soulHealer: number
+        // rank 20    
+        chaserSkill1: number
+        chaserSkill2: number
+    }
+}
+```
+```typescript
+type SoulImprint = {
+    memoryCore: Core
+    bodyCore: Core
+    soulCore: Core
+}
+
+type Core = {
+    level: number
+    nodeValues: { [key: string]: number }
+}
+```
+```typescript
+type Transcendence = {
+  level: number,
+  // traits only for levels 3 and 6
+  trait: { level: number, name: string }[]
+}
+```
+
+```typescript
+type Equipments = {
+    weapon: Equipment & { graySlot1: string, redSlot1: string, redSlot2: string }
+    supportWeapon: Equipment & { graySlot1: string, redSlot1: string, redSlot2: string }
+    armor: Equipment & { graySlot1: string, graySlot2: string }
+    supportArmor1: Equipment & { graySlot1: string, blueSlot1: string, blueSlot2: string }
+    supportArmor2: Equipment & { graySlot1: string, blueSlot1: string, blueSlot2: string }
+}
+
+type Equipment = {
+    set: 'Gaze of Focus' | 'Power of Doom' | 'Ribbon of Life' | 'Aura of Passion' | 'Support of Protection'
+    primaryAttribute: string
+    secondaryAttribute: string
+}
+```
+```typescript
+type HerosExclusiveWeapon = {
+    level: number
+}
+```
+
+```typescript
+type Artifact = {
+    level: number
+    tier: number
+    type: "common" | "frozen" | "burning" | "cursed"
+}
+```
+```typescript
+type Accessory<T extends 'ring' | 'necklace' | 'earring'> = {
+    type: T,
+    tier: number,
+    level: number,
+    set: 'Bloody Oath' | 'Determined Strike' | 'Protection of Life'
+    attribute: string
+}
+```
+
+The technologies choosen are Svelte and Tailwind for the frontend.
+Both for learning and also Svelte has lighter build version compared to react, which is the language the owner already know.
